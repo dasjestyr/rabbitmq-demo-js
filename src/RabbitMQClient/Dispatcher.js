@@ -21,20 +21,15 @@ class Dispatcher {
         console.debug("Dispatcher is running...")
     }
 
-    /**
-     * Registers a handler to run when a message of a particular type is received.
-     * @param {string} messageType - The type of message that was serialized into the MessageType header.
-     * @param {Function} callback - Function that will be called with the consumed message.
-     */
-    registerHandler(messageType, callback) {
+    _registerHandler(messageType, callback) {
         this._handlers[messageType] = callback;
     }
 
     _onMessage(message) {
         
         try {
-            let headers = message.properties.headers;
-            let messageType = headers["Type"];
+            
+            let messageType = message.properties.headers["Type"];
             let json = message.content.toString();            
 
             if(!messageType)
@@ -42,8 +37,9 @@ class Dispatcher {
 
             let messageObject = JSON.parse(json);
             delete messageObject.$messageType;
-            let handler = this._handlers[messageType];            
-            handler(messageObject);
+            let handler = this._handlers[messageType];    
+            
+            handler(messageObject, message.properties);
             this._client._channel.ack(message);
         } catch (e) {
             // TODO: place a retry limit and jitter backoff alg and move to error 

@@ -14,8 +14,8 @@ client.start().then(r => {
     client.subscribeTopic("js-topic-1", {routingKey: "#"}); // receive all messages
 
     // register handlers    
-    client.Dispatcher.registerHandler(MessageTypeA.$messageType, messageTypeAHandler)
-    client.Dispatcher.registerHandler("TypeB", messageTypeBHandler)
+    client.registerHandler(MessageTypeA.$messageType, messageTypeAHandler)
+    client.registerHandler("TypeB", messageTypeBHandler)
 
     runExamples();
 });

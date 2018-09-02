@@ -21,7 +21,7 @@ class Installer {
     /**
      * Installs this service's queues and exchange and binds them together.
      */
-    install() {
+    install() {        
         this._declareServiceQueue();
         this._declareExchange(this._client._serviceName, 'fanout');
         this._bindServiceQueue();
