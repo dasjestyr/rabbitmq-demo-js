@@ -123,6 +123,19 @@ class DASRabbitMQClient {
         this._sendToBus(destination, message);
     }
 
+    
+    /**
+     * Convenience method. Sends a message to *this* service's exchange. Use this when you want
+     * to defer commands, etc.
+     * @param {object} message 
+     */
+    sendLocal(message, properties) {
+        if(!message) {
+            throw "cannot send null message";
+        }
+        this._sendToBus(this._serviceName, message, properties);
+    }
+
     /**
      * Sends a message to the specified definition. Use this when you expect there could be more than
      * one consumer (events).
@@ -140,18 +153,6 @@ class DASRabbitMQClient {
         
         this._sendToBus(destination, message, options);
     }    
-
-    /**
-     * Convenience method. Sends a message to *this* service's exchange. Use this when you want
-     * to defer commands, etc.
-     * @param {object} message 
-     */
-    publishLocal(message, properties) {
-        if(!message) {
-            throw "cannot send null message";
-        }
-        this._sendToBus(this._serviceName, message, properties);
-    }
 
     _sendToBus(destination, message, options = {}){
         if(!message.$messageType)

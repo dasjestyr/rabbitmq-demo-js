@@ -33,7 +33,7 @@ function handleNotificationSentEvent(message, properties) {
     
     // defer the processing of this request until we have time (simulate a busy service)
     let deferralRequest = new ProcessConfirmationRequest(message.sentDate);
-    client.publishLocal(deferralRequest, properties);
+    client.sendLocal(deferralRequest, properties);
 }
 
 function handleProcessConfirmation(message, properties) {

@@ -28,10 +28,10 @@ function runExamples() {
 
     // strong type - send to our direct queue
     let message = new MessageTypeA("Strong Type", "Hello World!"); // $messageType is part of the instance   
-    client.publishLocal(message);
+    client.sendLocal(message);
 
     // anononymous type - send to our direct queue
-    client.publishLocal({$messageType: "TypeB", Prop1: "Anonymous Type", Prop2: "Hello world!"});
+    client.sendLocal({$messageType: "TypeB", Prop1: "Anonymous Type", Prop2: "Hello world!"});
 
     // to topic - shows that our subscription is moving messages from the topic exchange
     // to our exchange. It doesn't matter who writes to the topic. 
