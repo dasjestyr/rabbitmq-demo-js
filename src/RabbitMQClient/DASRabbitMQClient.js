@@ -146,11 +146,11 @@ class DASRabbitMQClient {
      * to defer commands, etc.
      * @param {object} message 
      */
-    publishLocal(message) {
+    publishLocal(message, properties) {
         if(!message) {
             throw "cannot send null message";
         }
-        this._sendToBus(this._serviceName, message);
+        this._sendToBus(this._serviceName, message, properties);
     }
 
     _sendToBus(destination, message, options = {}){

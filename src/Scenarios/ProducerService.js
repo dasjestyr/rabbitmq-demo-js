@@ -2,6 +2,7 @@ const rmq = require("../RabbitMQClient/DASRabbitMQClient")
 const NotificationRequest = require("./NotificationRequest")
 const NotificationSentEvent = require("./NotificationSentEvent")
 const NotificationActivity = require("./NotificationActivity")
+const ProcessConfirmationRequest = require("./ProcessConfirmationRequest")
 
 const client = new rmq("amqp://user:bitnami@localhost", "js-producer");
 client.start().then(r => {
@@ -12,15 +13,14 @@ client.start().then(r => {
     client.subscribeTopic("js-notifications-topic", {routingKey: "#.response"});      
     
     // register handlers
-    client.registerHandler(NotificationSentEvent.$messageType, handleNotificationSentEvent)
+    client.registerHandler(NotificationSentEvent.$messageType, handleNotificationSentEvent);
+    client.registerHandler(ProcessConfirmationRequest.$messageType, handleProcessConfirmation);
 
-    runExamples();
+    // run example over and over
+    setInterval(() => {
+        sendAnEmail("jon@winterfell.we", "You know nothing...");
+    }, 2000)    
 });
-
-function runExamples() {
-    // we'll receive the confirmation over the notifications topic
-    sendAnEmail("jon@winterfell.we", "You know nothing...") 
-}
 
 function sendAnEmail(destination, body) {
     let notificationRequest = new NotificationRequest(destination, body, "Email");
@@ -30,6 +30,13 @@ function sendAnEmail(destination, body) {
 /** HANDLERS */
 
 function handleNotificationSentEvent(message, properties) {
+    
+    // defer the processing of this request until we have time (simulate a busy service)
+    let deferralRequest = new ProcessConfirmationRequest(message.sentDate);
+    client.publishLocal(deferralRequest, properties);
+}
+
+function handleProcessConfirmation(message, properties) {
     console.debug(`Email ${properties.correlationId} was sent at ${message.sentDate}`);
 
     // publish to stats stream
