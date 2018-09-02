@@ -7,10 +7,13 @@
     - Commands (send)
     - Events (publish)
     - Deferrals (publishLocal)
-  - Enforce the following strategy:
-    - Each service gets its own queue that only it (and other instances of itself) will consume.
-    - Each service gets its own Fanout exchange which is bound only to the service's queue. Direct exchanges will not work because they cannot be bound to topic exchanges correctly (routing keys need to match exactly).
-    - "Commands" are published directly to a service's exchange so that they go straight to that service's queue.
-    - "Events" are published to topic exchanges. These exchanges can be as coarsely or finely grained as needed and they can potentially have multiple producers.
-      - To "subscribe" to the topic, a service will bind their exchange to the topic's exchange. Use routing key patterns to filter the messages that should be received.
-    - Use topic and headers exchanges in the same way. Only use header exchanges for topics that will require more expressive routing/filtering (via headers)
+     
+  ## Enforce the following strategy:
+  - Each service gets its own queue that only it (and other instances of itself) will consume.
+  - Each service gets its own Fanout exchange which is bound only to the service's queue. Direct exchanges will not work because they cannot be bound to topic exchanges correctly (routing keys need to match exactly).
+  - "Commands" are published directly to a service's exchange so that they go straight to that service's queue.
+  - "Events" are published to topic exchanges. These exchanges can be as coarsely or finely grained as needed and they can potentially have multiple producers.
+    - To "subscribe" to the topic, a service will bind their exchange to the topic's exchange. Use routing key patterns to filter the messages that should be received.
+  - Use topic and headers exchanges in the same way. Only use header exchanges for topics that will require more expressive routing/filtering (via headers)
+
+![Topology](https://i.imgur.com/pM16iIZ.jpg)
