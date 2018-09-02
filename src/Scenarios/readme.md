@@ -3,7 +3,7 @@
 This scenario illustrates the following
  - A service (ProducerService) makes a direct request of another service (NotificationService). It does this by calling the `.Send(...)` method on the client. The message is thus sent directly to the NotificationService's exchange.
  - The Notification service simulates the handling of the message and then responds. Instead of responding directly to the service that made the request (tight coupling), it publishes the `NotificationSent` event to a topic to which the sender is assumed to be subscribed. It also then publishes an event to a statistics topic, from which it expects no response (e.g. streaming analytics)
- - Since the ProducerService is subscribed to the notifications topic, it receives the response message and simulates updating its records. It does this by queuing the process (`SendLocal(...)`) in its own queue. When it gets around to processing those messages, it then publishes the fact that it received the confirmation to the statistics topic.
+ - Since the ProducerService is subscribed to the notifications topic, it receives the response message and simulates updating its records. It does this by queuing the process (`SendLocal(...)`) in its own queue to demonstrate deferral. When it gets around to processing those messages, it then publishes the fact that it received the confirmation to the statistics topic.
  - The statistics topic simulates receiving all events related to notifications and calculating statistics.
 
 ## This demonstrates the following principles
