@@ -16,4 +16,14 @@
     - To "subscribe" to the topic, a service will bind their exchange to the topic's exchange. Use routing key patterns to filter the messages that should be received.
   - Use topic and headers exchanges in the same way. Only use header exchanges for topics that will require more expressive routing/filtering (via headers)
 
+#### Using topics
+
 ![Topology](https://i.imgur.com/pM16iIZ.jpg)
+
+In the diagram above, the Producer is sending 2 messages to the `events-a` topic, each with a different routing key, `events-a.type2` and `events-a.rand.00`. 
+
+If you look at the queues, you'll notice that ServiceA has zero messages, ServiceB has 2 messages, and ServiceC has 1 messages. This is because of their exchange bindings:
+
+  - ServiceA's exchange is bound to the topic, but using a key of `events-a.type1`. It did not receive any messages because neither message sent by the producer match that pattern.
+  - ServiceB's exchange is bound to the topic using `events-a.#` which means it'll accept anything with a key that starts with "events-a." thus it got both messages sent by the producer.
+  - ServiceC's exchange is bound to the topic using the key events-a.type2` which matches one of the messages sent by the producer exactly, so it received that one message.
