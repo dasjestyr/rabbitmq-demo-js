@@ -1,13 +1,15 @@
 const rmq = require("../RabbitMQClient/DASRabbitMQClient")
 const NotificationRequest = require("./NotificationRequest")
 const NotificationSentEvent = require("./NotificationSentEvent")
+const NotificationActivity = require("./NotificationActivity")
 
-let client = new rmq("amqp://user:bitnami@localhost", "js-producer");
+const client = new rmq("amqp://user:bitnami@localhost", "js-producer");
 client.start().then(r => {
     console.debug("Producer is started.")
 
     // subscriptions
-    client.subscribeTopic("js-notifications-topic", {routingKey: "#.response"});  
+    client.declareTopic("js-notifications-stats-topic"); // we're going to be publishing to this topic but not consuming
+    client.subscribeTopic("js-notifications-topic", {routingKey: "#.response"});      
     
     // register handlers
     client.registerHandler(NotificationSentEvent.$messageType, handleNotificationSentEvent)
@@ -16,7 +18,8 @@ client.start().then(r => {
 });
 
 function runExamples() {
-    sendAnEmail("jon@winterfell.we", "You know nothing...")
+    // we'll receive the confirmation over the notifications topic
+    sendAnEmail("jon@winterfell.we", "You know nothing...") 
 }
 
 function sendAnEmail(destination, body) {
@@ -26,6 +29,13 @@ function sendAnEmail(destination, body) {
 
 /** HANDLERS */
 
-function handleNotificationSentEvent(message) {
-    console.debug(`Email ${message.correlationId} was sent at ${message.sentDate}`);
+function handleNotificationSentEvent(message, properties) {
+    console.debug(`Email ${properties.correlationId} was sent at ${message.sentDate}`);
+
+    // publish to stats stream
+    let activity = new NotificationActivity("OriginatorReceivedConfirmation", new Date(Date.now()))
+    client.publish("js-notifications-stats-topic", activity, {
+        routingKey: "producer.notifications.confirmation.received",
+        correlationId: properties.correlationId
+    });
 }

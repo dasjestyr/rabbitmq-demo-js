@@ -49,15 +49,8 @@ class Installer {
             name,
             name)
     }
-
-    /**
-     * Creates a topic or headers exchange. Use this during setup to setup a 
-     * topic that this service will publish to This is just a semantic convenience 
-     * method to help enforce how we use RMQ.
-     * @param {string} name - name of the topic exchagne to create
-     * @param {string} exchangeType - topic or headers
-     */
-    declareTopic(name, exchangeType = "topic") {
+    
+    _declareTopic(name, exchangeType = "topic") {
         if(exchangeType !== 'topic' && exchangeType !== 'headers')
             throw "Select topic or headers as an exchange type";
 
@@ -72,10 +65,13 @@ class Installer {
      * @param {string} exchangeType - topic, fanout, headers, or direct
      */
     subscribeTopic(exchangeName, options, exchangeType = "topic") {
+        if(!options || (!options.routingKey && !options.headers))
+            throw "must have a routing key or headers!"
+            
         if(options.routingKey && options.headers)
-            throw "Cannot have both routing key and headers!"
+            throw "cannot have both routing key and headers!"        
         
-        this.declareTopic(exchangeName, exchangeType);
+        this._declareTopic(exchangeName, exchangeType);
         this._client._channel.bindExchange(
             this._client._serviceName,
             exchangeName, 

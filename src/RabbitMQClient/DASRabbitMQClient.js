@@ -88,6 +88,17 @@ class DASRabbitMQClient {
     }
 
     /**
+     * Creates a topic or headers exchange. Use this during setup to setup a 
+     * topic that this service will publish to This is just a semantic convenience 
+     * method to help enforce how we use RMQ.
+     * @param {string} name - name of the topic exchagne to create
+     * @param {string} exchangeType - topic or headers
+     */
+    declareTopic(exchangeName, exchangeType = "topic") {
+        this._installer._declareTopic(exchangeName, exchangeType);
+    }
+
+    /**
      * Subscribe this service to a topic exchange
      * @param {string} exchangeName - the name of the topic to subscribe
      * @param {object} options - see RMQ docs for exchange options/args
@@ -147,7 +158,7 @@ class DASRabbitMQClient {
             throw "Missing message type property";
         
         options.persistent = true;
-        options.correlationId = xid.next();
+        options.correlationId = !options.correlationId ? xid.next() : options.correlationId;
         options.headers = {Type: message.$messageType}; // TODO merge with headers that are in options
 
         let messageJson = JSON.stringify(message);
