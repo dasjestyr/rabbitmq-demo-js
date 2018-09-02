@@ -18,7 +18,8 @@ class Dispatcher {
             this._client._serviceName, 
             message => this._onMessage(message), 
             { noAck: false }); // require an ack
-        console.debug("Dispatcher is running...")
+
+        logDebug("Dispatcher is running...")
     }
 
     _registerHandler(messageType, callback) {
@@ -33,7 +34,7 @@ class Dispatcher {
             let json = message.content.toString();            
 
             if(!messageType)
-                console.error(`Could not determine message type. Message: ${json}.`)
+                logError(`Could not determine message type. Message: ${json}.`)
 
             let messageObject = JSON.parse(json);
             delete messageObject.$messageType;
@@ -44,10 +45,18 @@ class Dispatcher {
         } catch (e) {
             // TODO: place a retry limit and jitter backoff alg and move to error 
             // queue if we can't process it
-            console.error(`Handler failed ${e.message}. Nacking the message...`)
+            logError(`Handler failed ${e.message}. Nacking the message...`)
             this._client._channel.nack(message);
         }
     }
+}
+
+function logError(message) {
+    console.error(`[AMQP-Dispatcher] ${message}`);
+}
+
+function logDebug(message) {
+    console.debug(`[AMQP-Dispatcher] ${message}`);
 }
 
 module.exports = Dispatcher;

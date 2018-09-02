@@ -29,12 +29,12 @@ class Installer {
 
     _declareServiceQueue() {
         let name = this._client._serviceName;
-        console.debug(`Declaring queue \"${name}\"...`);
+        logDebug(`Declaring queue \"${name}\"...`);
         this._client._channel.assertQueue(name, {durable: true});
     }
 
     _declareExchange(name, type, options = {}) {
-        console.debug(`Declaring exchange \"${name}\"...`)
+        logDebug(`Declaring exchange \"${name}\"...`)
         options.durable = true;
         this._client._channel.assertExchange(
             name, 
@@ -44,7 +44,7 @@ class Installer {
     
     _bindServiceQueue() {
         let name = this._client._serviceName;
-        console.debug(`Binding queue \"${name}\" to exchange \"${name}\"...`)
+        logDebug(`Binding queue \"${name}\" to exchange \"${name}\"...`)
         this._client._channel.bindQueue(
             name,
             name)
@@ -54,7 +54,7 @@ class Installer {
         if(exchangeType !== 'topic' && exchangeType !== 'headers')
             throw "Select topic or headers as an exchange type";
 
-        console.debug(`Declaring ${exchangeType}-type topic \"${name}\"...`)
+        logDebug(`Declaring ${exchangeType}-type topic \"${name}\"...`)
         this._declareExchange(name, exchangeType)
     }
 
@@ -80,4 +80,7 @@ class Installer {
     }    
 }
 
+function logDebug(message) {
+    console.debug(`[AMQP-Installer] ${message}`);
+}
 module.exports = Installer;

@@ -41,22 +41,22 @@ class DASRabbitMQClient {
         return new Promise(function (resolve, reject) {
             self._amqp.connect(self._connectionString, function(err, conn) {
                 if(err) {
-                    console.error(`[AMQP] ${err.message}`);
+                    logError(err.message);
                     return setTimeout(() => self.start, 1000); // restart?
                 }
     
                 conn.on("error", function(err) {
                     if(err.message !== "Connection closing") {
-                        console.error(`[AMQP] conn error ${err}`);
+                        logError(`conn error ${err}`);                        
                     }
                 })
     
                 conn.on("close", function() {
-                    console.error(`[AMQP] reconnecting`);
+                    logError("reconnecting");                    
                     return setTimeout(() => self.start, 1000);
                 })
     
-                console.log(`[AMQP] connected!`);
+                logInfo("connected!")
                 self._connection = conn;
                 self._whenConnected(resolve);
             });
@@ -68,11 +68,11 @@ class DASRabbitMQClient {
         this._connection.createConfirmChannel(function(err, ch) {
                         
             ch.on("error", function(err) {
-                console.error(`[AMQP] channel error ${err}`);
+                logError(`channel error ${err}`);                
             })
 
             ch.on("close", function() {
-                console.error(`[AMQP] channel closed.`)
+                logError("channel closed.");                
             })
 
             self._channel = ch;
@@ -160,7 +160,7 @@ class DASRabbitMQClient {
         
         options.persistent = true;
         options.correlationId = !options.correlationId ? xid.next() : options.correlationId;
-        options.headers = {Type: message.$messageType}; // TODO merge with headers that are in options
+        options.headers = {Type: message.$messageType}; // TODO (BUG?) merge with headers that are in options
 
         let messageJson = JSON.stringify(message);
         try {
@@ -174,12 +174,12 @@ class DASRabbitMQClient {
                 function(err) {
                 
                 // TODO: place a retry limit and jitter backoff alg and move to error 
-                // queue if we can't process it
+                // queue if we can't process it or else t his will get stuck in a loop
             })
         } catch (e) {
-            console.error(`[AMQP] publish error ${e.message}`);
+            logError(`publish error ${e.message}`);            
             // TODO: place a retry limit and jitter backoff alg and move to error 
-            // queue if we can't process it
+            // queue if we can't process it or else this will get stuck in a loop
         }
     }
 
@@ -191,6 +191,14 @@ class DASRabbitMQClient {
     registerHandler(messageType, callback) {
         this.Dispatcher._registerHandler(messageType, callback);
     }
+}
+
+function logError(message) {
+    console.error(`[AMQP-Client] ${message}`)
+}
+
+function logInfo(message) {
+    console.info(`[AMQP-Client] ${message}`);
 }
 
 module.exports = DASRabbitMQClient;
