@@ -3,6 +3,10 @@ const DASRabbitMQClient = require("./DASRabbitMQClient")
 /**
  * Installer provides setup for RMQ and exposes some methods to allow for creating
  * topics and binding/subscribing this service to them.
+ * 
+ * TODO: look into TTL for queues and topics. Maybe have them delete themselves after
+ * not having been connected to in so long. Otherwise there's no intuitive way to 
+ * "unsubscribe" to anything in a service context like this.
  */
 class Installer {
     
@@ -22,8 +26,6 @@ class Installer {
         this._declareExchange(this._client._serviceName, 'fanout');
         this._bindServiceQueue();
     }
-
-    // TODO: make these all private when ES7 is usable
 
     _declareServiceQueue() {
         let name = this._client._serviceName;
