@@ -17,8 +17,11 @@ client.start().then(r => {
     client.Dispatcher.registerHandler(MessageTypeA.$messageType, messageTypeAHandler)
     client.Dispatcher.registerHandler("TypeB", messageTypeBHandler)
 
-    // TESTS: publish to ourselves and see the handlers work
+    runExamples();
+});
 
+function runExamples() {
+    
     // NOTE: use the metadata property type $messageType to describe your message
     // it will be used to find the correct handler. Here are a couple examples using
     // strong and weak types:
@@ -34,7 +37,7 @@ client.start().then(r => {
     // to our exchange. It doesn't matter who writes to the topic. 
     let topicMessage = new MessageTypeA("Topic message", "Hello world!");
     client.publish("js-topic-1", topicMessage, {routingKey: "some.key.you.choose"})
-});
+}
 
 function messageTypeAHandler(message) {
     console.log(`Received message: ${JSON.stringify(message)}`);
