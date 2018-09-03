@@ -1,7 +1,5 @@
 const rmq = require("../RabbitMQClient/DASRabbitMQClient")
-const NotificationRequest = require("../Scenarios/NotificationRequest")
-const NotificationSentEvent = require("../Scenarios/NotificationSentEvent")
-const NotificationActivity = require("../Scenarios/NotificationActivity.js")
+const msg = require("./Messages")
 
 let client = new rmq("amqp://user:bitnami@localhost", "js-notification-service")
 client.start().then(r => {
@@ -10,7 +8,7 @@ client.start().then(r => {
     // subscriptions
 
     // register handlers
-    client.registerHandler(NotificationRequest.$messageType, handleNotificationRequest);
+    client.registerHandler(msg.NotificationRequest.$messageType, handleNotificationRequest);
 });
 
 /** HANDLERS */
@@ -21,7 +19,7 @@ function handleNotificationRequest(message, properties) {
     switch(message.deliveryMethod){
         case "Email":
             // ... call Email logic            
-            let emailSent = new NotificationSentEvent(timestamp);
+            let emailSent = new msg.NotificationSentEvent(timestamp);
             client.publish("js-notifications-topic", emailSent, {
                 routingKey: "request.email.response", 
                 correlationId: properties.correlationId
@@ -29,7 +27,7 @@ function handleNotificationRequest(message, properties) {
             break;
         case "SMS":
             // ... call SMS logic            
-            let smsSent = new NotificationSentEvent(timestamp);
+            let smsSent = new msg.NotificationSentEvent(timestamp);
             client.publish("js-notifications-topic", smsSent, {
                 routingKey: "request.sms.response", 
                 correlationId: properties.correlationId
@@ -39,7 +37,7 @@ function handleNotificationRequest(message, properties) {
             throw `Unknown delivery method \"${message.deliveryMethod}\"`;            
     }
 
-    let activity = new NotificationActivity("NotificationServiceSentConfirmation", timestamp);
+    let activity = new msg.NotificationActivity("NotificationServiceSentConfirmation", timestamp);
     client.publish("js-notifications-stats-topic", activity, {
         routingKey: "notifications.email.response",
         correlationId: properties.correlationId

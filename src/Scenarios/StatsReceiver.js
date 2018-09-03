@@ -1,5 +1,5 @@
 const rmq = require("../RabbitMQClient/DASRabbitMQClient");
-const activityEvent = require("../Scenarios/NotificationActivity");
+const msg = require("./Messages")
 
 const client = new rmq("amqp://user:bitnami@localhost", "js-stats-consumer");
 
@@ -13,7 +13,7 @@ client.start().then(r => {
     client.subscribeTopic("js-notifications-stats-topic", {routingKey: "#"});
 
     // register handlers
-    client.registerHandler(activityEvent.$messageType, handleActivityEvent);
+    client.registerHandler(msg.NotificationActivity.$messageType, handleActivityEvent);
 })
 
 /** HANDLERS */

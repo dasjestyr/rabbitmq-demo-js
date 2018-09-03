@@ -1,8 +1,5 @@
 const rmq = require("../RabbitMQClient/DASRabbitMQClient")
-const NotificationRequest = require("./NotificationRequest")
-const NotificationSentEvent = require("./NotificationSentEvent")
-const NotificationActivity = require("./NotificationActivity")
-const ProcessConfirmationRequest = require("./ProcessConfirmationRequest")
+const msg = require("./Messages.js")
 
 const client = new rmq("amqp://user:bitnami@localhost", "js-producer");
 client.start().then(r => {
@@ -13,8 +10,8 @@ client.start().then(r => {
     client.subscribeTopic("js-notifications-topic", {routingKey: "#.response"});      
     
     // register handlers
-    client.registerHandler(NotificationSentEvent.$messageType, handleNotificationSentEvent);
-    client.registerHandler(ProcessConfirmationRequest.$messageType, handleProcessConfirmation);
+    client.registerHandler(msg.NotificationSentEvent.$messageType, handleNotificationSentEvent);
+    client.registerHandler(msg.ProcessConfirmationRequest.$messageType, handleProcessConfirmation);
 
     // run example over and over
     setInterval(() => {
@@ -23,7 +20,7 @@ client.start().then(r => {
 });
 
 function sendAnEmail(destination, body) {
-    let notificationRequest = new NotificationRequest(destination, body, "Email");
+    let notificationRequest = new msg.NotificationRequest(destination, body, "Email");
     client.send("js-notification-service", notificationRequest) 
 }
 
@@ -32,7 +29,7 @@ function sendAnEmail(destination, body) {
 function handleNotificationSentEvent(message, properties) {
     
     // defer the processing of this request until we have time (simulate a busy service)
-    let deferralRequest = new ProcessConfirmationRequest(message.sentDate);
+    let deferralRequest = new msg.ProcessConfirmationRequest(message.sentDate);
     client.sendLocal(deferralRequest, properties);
 }
 
@@ -40,7 +37,7 @@ function handleProcessConfirmation(message, properties) {
     console.debug(`Email ${properties.correlationId} was sent at ${message.sentDate}`);
 
     // publish to stats stream
-    let activity = new NotificationActivity("OriginatorReceivedConfirmation", new Date(Date.now()))
+    let activity = new msg.NotificationActivity("OriginatorReceivedConfirmation", new Date(Date.now()))
     client.publish("js-notifications-stats-topic", activity, {
         routingKey: "producer.notifications.confirmation.received",
         correlationId: properties.correlationId
